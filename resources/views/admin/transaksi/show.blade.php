@@ -83,7 +83,7 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Bukti Pembayaran</label>
                                     <div>
-                                        <img src="{{ asset('storage/bukti_pembayaran/' . $transaksi->bukti_pembayaran) }}" alt="Bukti Pembayaran" class="img-fluid rounded" style="max-width: 300px;">
+                                        <img src="{{ asset('storage/' . $transaksi->bukti_pembayaran) }}" alt="Bukti Pembayaran" class="img-fluid rounded" style="max-width: 300px;">
                                     </div>
                                 </div>
                             @endif

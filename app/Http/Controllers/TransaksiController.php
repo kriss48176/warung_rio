@@ -43,14 +43,14 @@ class TransaksiController extends Controller
 
         if ($request->hasFile('bukti_pembayaran')) {
             // Delete old file if exists
-            if ($transaksi->bukti_pembayaran && Storage::exists('public/bukti_pembayaran/' . $transaksi->bukti_pembayaran)) {
-                Storage::delete('public/bukti_pembayaran/' . $transaksi->bukti_pembayaran);
+            if ($transaksi->bukti_pembayaran && Storage::exists('public/' . $transaksi->bukti_pembayaran)) {
+                Storage::delete('public/' . $transaksi->bukti_pembayaran);
             }
 
             $file = $request->file('bukti_pembayaran');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $file->storeAs('public/bukti_pembayaran', $filename);
-            $data['bukti_pembayaran'] = $filename;
+            $path = $file->storeAs('bukti_pembayaran', $filename, 'public');
+            $data['bukti_pembayaran'] = $path;
         }
 
         $transaksi->update($data);
@@ -68,13 +68,11 @@ class TransaksiController extends Controller
         $transaksi = Transaksi::findOrFail($id);
 
         // Delete bukti pembayaran file if exists
-        if ($transaksi->bukti_pembayaran && Storage::exists('public/bukti_pembayaran/' . $transaksi->bukti_pembayaran)) {
-            Storage::delete('public/bukti_pembayaran/' . $transaksi->bukti_pembayaran);
+        if ($transaksi->bukti_pembayaran && Storage::exists('public/' . $transaksi->bukti_pembayaran)) {
+            Storage::delete('public/' . $transaksi->bukti_pembayaran);
         }
 
         $transaksi->delete();
-
-        return redirect()->route('admin/transaksi.index')->with('success', 'Transaksi berhasil dihapus');
     }
 
     public function confirmCod($id)

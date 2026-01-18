@@ -5,7 +5,7 @@
 
 <div class="checkout-container py-4" style="background: linear-gradient(135deg, #f0f7f4 0%, #f8fbf9 100%); min-height: 100vh;">
     <div class="container">
-        {{-- Tampilkan Error Validasi Laravel di Sini (PENTING UNTUK DEBUG) --}}
+        {{-- Tampilkan Error Validasi Laravel --}}
         @if ($errors->any())
             <div class="alert alert-danger border-0 shadow-sm mb-3" style="font-size: 0.8rem;">
                 <ul class="mb-0">
@@ -50,6 +50,11 @@
                                 <div class="col-12">
                                     <label class="small fw-semibold text-muted mb-1">Alamat Lengkap</label>
                                     <textarea name="alamat" class="form-control form-control-sm custom-input" rows="2" required>{{ $pelanggan->address ?? old('alamat') }}</textarea>
+                                </div>
+                                {{-- Tambahan Kolom Catatan --}}
+                                <div class="col-12 mt-2">
+                                    <label class="small fw-semibold text-muted mb-1">Catatan Pesanan (Opsional)</label>
+                                    <textarea name="catatan" class="form-control form-control-sm custom-input" rows="2" placeholder="Contoh: Sambal dipisah, tanpa bawang goreng, dll">{{ old('catatan') }}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -166,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     buktiInput.addEventListener('change', validateSubmit);
-    validateSubmit(); // Cek saat load awal
+    validateSubmit(); 
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -180,7 +185,6 @@ document.addEventListener('DOMContentLoaded', function() {
             didOpen: () => { Swal.showLoading(); }
         });
 
-        // Pastikan form dikirim secara fisik
         setTimeout(() => { form.submit(); }, 500);
     });
 });

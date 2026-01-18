@@ -21,7 +21,7 @@
                                 </span>
                             </div>
                             <h4 class="fw-bold text-dark">Wah, keranjangmu kosong!</h4>
-                            <p class="text-muted mb-4">Sepertinya Anda belum memilih menu lezat kami hari ini. Yuk, jelajahi menu terbaik kami!</p>
+                            <p class="text-muted mb-4">Sepertinya Anda belum memilih menu lezat kami hari ini.</p>
                             <a href="{{ route('pelanggan.index') }}" class="btn btn-success px-5 py-2 rounded-pill fw-bold shadow-sm">
                                 <i class="fas fa-utensils me-2"></i>Mulai Pesan Sekarang
                             </a>
@@ -78,18 +78,10 @@
                     <div class="card border-0 shadow-sm rounded-4 bg-white sticky-top" style="top: 20px;">
                         <div class="card-body p-4">
                             <h5 class="fw-bold mb-4 text-dark">Ringkasan Pesanan</h5>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted">Subtotal</span>
-                                <span class="fw-bold subtotal text-dark">Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted">Pajak (10%)</span>
-                                <span class="fw-bold tax text-danger">+ Rp {{ number_format($grandTotal * 0.1, 0, ',', '.') }}</span>
-                            </div>
                             <hr class="my-3 opacity-50">
                             <div class="d-flex justify-content-between mb-4">
-                                <span class="h5 fw-bold text-dark">Total</span>
-                                <span class="h5 fw-bold text-success total">Rp {{ number_format($grandTotal * 1.1, 0, ',', '.') }}</span>
+                                <span class="h5 fw-bold text-dark">Total Bayar</span>
+                                <span class="h5 fw-bold text-success total">Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
                             </div>
                             <a href="{{ route('checkout.index') }}" class="btn btn-success w-100 rounded-pill py-2 fw-bold shadow-sm hover-elevate">
                                 Check Out Sekarang
@@ -108,12 +100,8 @@
         box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3) !important;
         transition: all 0.3s ease;
     }
-    .qty-input {
-        font-size: 0.9rem;
-    }
-    .item-row:hover {
-        background-color: #fafafa;
-    }
+    .qty-input { font-size: 0.9rem; }
+    .item-row:hover { background-color: #fafafa; }
 </style>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -127,10 +115,9 @@ $(document).ready(function() {
         return 'Rp ' + number.toLocaleString('id-ID');
     }
 
+    // Fungsi refresh total diperbarui (Tanpa Pajak)
     function refreshTotals(res) {
-        $('.subtotal').text(formatRupiah(res.grand_total));
-        $('.tax').text('+ ' + formatRupiah(res.grand_total * 0.1));
-        $('.total').text(formatRupiah(res.grand_total * 1.1));
+        $('.total').text(formatRupiah(res.grand_total));
     }
 
     function updateQty(id, qty) {

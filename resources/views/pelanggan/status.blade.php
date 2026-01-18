@@ -25,7 +25,7 @@
             <div class="row g-3">
                 @foreach($statuses as $status)
                 <div class="col-12">
-                    <div class="card border-0 shadow-sm rounded-3">
+                    <div class="card border-0 shadow-sm rounded-3 mb-3">
                         {{-- Header Card: Info Tanggal & Status --}}
                         <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center">
@@ -43,7 +43,8 @@
                                     'diantar' => ['bg' => '#fef3c7', 'text' => '#92400e'],
                                     'selesai' => ['bg' => '#f0fdf4', 'text' => '#15803d'],
                                 ];
-                                $st = $statusMap[strtolower($status->status)] ?? ['bg' => '#fff4e5', 'text' => '#b45309'];
+                                $currentStatus = strtolower($status->status);
+                                $st = $statusMap[$currentStatus] ?? ['bg' => '#eee', 'text' => '#666'];
                             @endphp
                             
                             <span class="badge border-0" style="background-color: {{ $st['bg'] }}; color: {{ $st['text'] }}; font-size: 0.7rem; padding: 5px 12px;">
@@ -53,27 +54,26 @@
 
                         <div class="card-body px-4">
                             <div class="row align-items-center">
-                                {{-- Daftar Menu --}}
+                                {{-- Daftar Menu (Looping Semua Item) --}}
                                 <div class="col-md-8">
-                                    @php $firstItem = $status->items[0] ?? null; @endphp
-                                    @if($firstItem)
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-light rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
-                                                <i class="fas fa-utensils text-muted"></i>
+                                    {{-- Menggunakan relasi details/items sesuai yang ada di model Anda --}}
+                                    @php $items = $status->details ?? $status->items ?? []; @endphp
+                                    
+                                    @foreach($items as $item)
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="bg-light rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; flex-shrink: 0;">
+                                                <i class="fas fa-utensils text-muted" style="font-size: 0.8rem;"></i>
                                             </div>
                                             <div>
-                                                <h6 class="fw-bold text-dark mb-0">{{ $firstItem['nama_menu'] }}</h6>
+                                                <h6 class="fw-bold text-dark mb-0" style="font-size: 0.85rem;">
+                                                    {{ $item->menu->nama_menu ?? ($item['nama_menu'] ?? 'Menu') }}
+                                                </h6>
                                                 <div class="text-muted small">
-                                                    {{ $firstItem['jumlah'] }} unit x Rp{{ number_format($firstItem['total_harga'] / $firstItem['jumlah'], 0, ',', '.') }}
+                                                    {{ $item->jumlah ?? $item['jumlah'] }} unit x Rp{{ number_format(($item->total_harga ?? $item['total_harga']) / ($item->jumlah ?? $item['jumlah']), 0, ',', '.') }}
                                                 </div>
-                                                @if(count($status->items) > 1)
-                                                    <div class="text-muted small mt-1" style="font-size: 0.75rem;">
-                                                        +{{ count($status->items) - 1 }} menu lainnya
-                                                    </div>
-                                                @endif
                                             </div>
                                         </div>
-                                    @endif
+                                    @endforeach
                                 </div>
 
                                 {{-- Total Belanja --}}

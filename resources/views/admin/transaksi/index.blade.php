@@ -20,7 +20,7 @@
             $stats = [
                 ['label' => 'Total Transaksi', 'value' => \App\Models\Transaksi::count(), 'color' => 'primary', 'icon' => 'credit-card'],
                 ['label' => 'Lunas', 'value' => \App\Models\Transaksi::where('status_pembayaran', 'lunas')->count(), 'color' => 'success', 'icon' => 'check-double'],
-                ['label' => 'Pending', 'value' => \App\Models\Transaksi::where('status_pembayaran', 'pending')->count(), 'color' => 'warning', 'icon' => 'history'],
+                ['label' => 'Pending', 'value' => \App\Models\Transaksi::whereIn('status_pembayaran', ['pending', 'menunggu_konfirmasi'])->count(), 'color' => 'warning', 'icon' => 'history'],
                 ['label' => 'Gagal', 'value' => \App\Models\Transaksi::where('status_pembayaran', 'gagal')->count(), 'color' => 'danger', 'icon' => 'times-circle']
             ];
         @endphp
@@ -86,13 +86,14 @@
                                     <td>
                                         @php
                                             $statusColor = [
-                                                'lunas' => 'success', 
-                                                'pending' => 'warning', 
+                                                'lunas' => 'success',
+                                                'pending' => 'warning',
+                                                'menunggu_konfirmasi' => 'warning',
                                                 'gagal' => 'danger'
                                             ][$transaksi->status_pembayaran] ?? 'secondary';
                                         @endphp
                                         <span class="badge bg-{{ $statusColor }} bg-opacity-10 text-{{ $statusColor }} rounded-pill px-3 border border-{{ $statusColor }}">
-                                            {{ ucfirst($transaksi->status_pembayaran) }}
+                                            {{ ucfirst(str_replace('_', ' ', $transaksi->status_pembayaran)) }}
                                         </span>
                                     </td>
                                     <td class="text-center">
@@ -120,48 +121,34 @@
                     </table>
                 </div>
 
-                {{-- FOOTER PAGINATION DI SEBELAH KANAN --}}
                 <div class="card-footer bg-white border-top py-3">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center px-2">
                         <div class="small text-muted mb-3 mb-md-0">
                             Menampilkan <strong>{{ $transaksis->firstItem() ?? 0 }}</strong> - <strong>{{ $transaksis->lastItem() ?? 0 }}</strong> dari <strong>{{ $transaksis->total() }}</strong> transaksi
                         </div>
-                        
+
                         <nav aria-label="Page navigation">
                             <ul class="pagination pagination-sm mb-0">
-                                {{-- Previous Page Link --}}
                                 @if ($transaksis->onFirstPage())
-                                    <li class="page-item disabled">
-                                        <span class="page-link border-0 bg-light text-muted">Previous</span>
-                                    </li>
+                                    <li class="page-item disabled"><span class="page-link border-0 bg-light text-muted">Previous</span></li>
                                 @else
-                                    <li class="page-item">
-                                        <a class="page-link shadow-none" href="{{ $transaksis->previousPageUrl() }}">Previous</a>
-                                    </li>
+                                    <li class="page-item"><a class="page-link shadow-none" href="{{ $transaksis->previousPageUrl() }}">Previous</a></li>
                                 @endif
 
-                                {{-- Page Numbers --}}
                                 @foreach ($transaksis->getUrlRange(max(1, $transaksis->currentPage() - 2), min($transaksis->lastPage(), $transaksis->currentPage() + 2)) as $page => $url)
-                                    @if ($page == $transaksis->currentPage())
-                                        <li class="page-item active shadow-sm">
+                                    <li class="page-item {{ $page == $transaksis->currentPage() ? 'active shadow-sm' : '' }}">
+                                        @if ($page == $transaksis->currentPage())
                                             <span class="page-link px-3 fw-bold">{{ $page }}</span>
-                                        </li>
-                                    @else
-                                        <li class="page-item">
+                                        @else
                                             <a class="page-link shadow-none" href="{{ $url }}">{{ $page }}</a>
-                                        </li>
-                                    @endif
+                                        @endif
+                                    </li>
                                 @endforeach
 
-                                {{-- Next Page Link --}}
                                 @if ($transaksis->hasMorePages())
-                                    <li class="page-item">
-                                        <a class="page-link shadow-none" href="{{ $transaksis->nextPageUrl() }}">Next</a>
-                                    </li>
+                                    <li class="page-item"><a class="page-link shadow-none" href="{{ $transaksis->nextPageUrl() }}">Next</a></li>
                                 @else
-                                    <li class="page-item disabled">
-                                        <span class="page-link border-0 bg-light text-muted">Next</span>
-                                    </li>
+                                    <li class="page-item disabled"><span class="page-link border-0 bg-light text-muted">Next</span></li>
                                 @endif
                             </ul>
                         </nav>
@@ -177,9 +164,7 @@
     </div>
 </div>
 
-{{-- Modals (Bukti & COD) Tetap Sama Seperti Kode Anda Sebelumnya --}}
 @foreach($transaksis as $transaksi)
-    {{-- ... (Konten Modal Bukti Pembayaran Anda) ... --}}
     @if($transaksi->bukti_pembayaran)
     <div class="modal fade" id="buktiModal{{ $transaksi->id_transaksi }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-md">
@@ -189,8 +174,16 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4 text-center">
-                    <div class="bg-light p-2 rounded-3 border">
-                        <img src="{{ asset('storage/' . $transaksi->bukti_pembayaran) }}" class="img-fluid rounded-2 shadow-sm" style="max-height: 500px; object-fit: contain;">
+                    <div class="bg-white border rounded p-2">
+                        {{-- Perbaikan Path Gambar Disini --}}
+                        <img src="{{ asset('storage/' . $transaksi->bukti_pembayaran) }}"
+                             class="img-fluid rounded shadow-sm"
+                             style="max-height: 400px; width: auto; object-fit: contain;">
+                        <div class="mt-2 border-top pt-2">
+                            <a href="{{ asset('storage/' . $transaksi->bukti_pembayaran) }}" target="_blank" class="btn btn-link btn-sm text-decoration-none fw-bold">
+                                <i class="fas fa-search-plus me-1"></i> Perbesar Gambar
+                            </a>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
@@ -201,7 +194,6 @@
     </div>
     @endif
 
-    {{-- ... (Konten Modal COD Anda) ... --}}
     @if(strtolower($transaksi->metode_pembayaran) !== 'bank transfer' && strtolower($transaksi->metode_pembayaran) !== 'bank_transfer')
     <div class="modal fade" id="confirmCodModal{{ $transaksi->id_transaksi }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-md">
@@ -211,30 +203,28 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <div class="bg-light p-3 rounded-3 mb-4">
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <span class="small text-muted fw-semibold text-uppercase">Kode</span>
-                                <div class="fw-bold text-primary">{{ $transaksi->kode_transaksi }}</div>
-                            </div>
-                            <div class="col-6 text-end">
-                                <span class="small text-muted fw-semibold text-uppercase">Total</span>
-                                <div class="fw-bold text-dark">Rp {{ number_format($transaksi->total_tagihan, 0, ',', '.') }}</div>
-                            </div>
-                        </div>
+            <div class="bg-light p-3 rounded-3 mb-4">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <span class="small text-muted fw-semibold text-uppercase">Kode</span>
+                        <div class="fw-bold text-primary">{{ $transaksi->kode_transaksi }}</div>
                     </div>
-                    <div class="alert alert-info border-0 rounded-3 small">
-                        Pastikan uang tunai sudah diterima sebelum konfirmasi.
+                    <div class="col-6 text-end">
+                        <span class="small text-muted fw-semibold text-uppercase">Total</span>
+                        <div class="fw-bold text-dark">Rp {{ number_format($transaksi->total_tagihan, 0, ',', '.') }}</div>
                     </div>
-                </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-outline-secondary rounded-2" data-bs-dismiss="modal">Batal</button>
-                    <form action="{{ route('admin/transaksi.confirm-cod', $transaksi->id_transaksi) }}" method="POST" style="display: inline;">
-                        @csrf
-                        <button type="submit" class="btn btn-success rounded-2">Konfirmasi</button>
-                    </form>
                 </div>
             </div>
+            <div class="alert alert-info border-0 rounded-3 small">
+                Pastikan uang tunai sudah diterima sebelum konfirmasi.
+            </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-outline-secondary rounded-2" data-bs-dismiss="modal">Batal</button>
+            <form action="{{ route('admin/transaksi.confirm-cod', $transaksi->id_transaksi) }}" method="POST" style="display: inline;">
+                @csrf
+                <button type="submit" class="btn btn-success rounded-2">Konfirmasi</button>
+            </form>
         </div>
     </div>
     @endif
@@ -245,11 +235,8 @@
     .bg-success-subtle { background-color: rgba(28, 200, 138, 0.1); }
     .bg-warning-subtle { background-color: rgba(246, 194, 62, 0.1); }
     .bg-danger-subtle { background-color: rgba(231, 74, 59, 0.1); }
-    
     .table th { font-size: 0.75rem; letter-spacing: 0.5px; }
     .btn-white { background-color: #fff; }
-    
-    /* Pagination Styling agar pas di kanan */
     .pagination .page-link {
         color: #4e73df;
         border: 1px solid #dee2e6;
