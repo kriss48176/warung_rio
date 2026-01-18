@@ -1,137 +1,129 @@
 @extends('layouts.pelanggan')
 
 @section('content')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="checkout-container py-4" style="background: linear-gradient(135deg, #f0f7f4 0%, #f8fbf9 100%); min-height: 100vh;">
-    <div class="row g-3 justify-content-center">
-        {{-- KIRI: Form Pengiriman & Pembayaran --}}
-        <div class="col-lg-7">
-            <form action="{{ route('checkout.store') }}" method="POST" id="checkoutForm" enctype="multipart/form-data">
-                @csrf
+    <div class="container">
+        {{-- Tampilkan Error Validasi Laravel di Sini (PENTING UNTUK DEBUG) --}}
+        @if ($errors->any())
+            <div class="alert alert-danger border-0 shadow-sm mb-3" style="font-size: 0.8rem;">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-                {{-- Card Data Pengiriman --}}
-                <div class="card border-0 shadow-sm rounded-4 mb-3">
-                    <div class="card-body p-3">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-box bg-success-subtle text-success me-2" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                                <i class="fas fa-map-marker-alt fa-sm"></i>
-                            </div>
-                            <h6 class="fw-bold mb-0" style="font-size: 0.9rem;">Informasi Pengiriman</h6>
-                        </div>
-                        
-                        <div class="row g-2">
-                            <div class="col-md-6">
-                                <label class="small fw-semibold text-muted mb-1">Nama Penerima</label>
-                                <input type="text" name="nama_pelanggan" class="form-control form-control-sm custom-input" value="{{ $pelanggan->name ?? old('nama_pelanggan') }}" placeholder="Nama penerima" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="small fw-semibold text-muted mb-1">No. WhatsApp</label>
-                                <input type="tel" name="no_hp" class="form-control form-control-sm custom-input" value="{{ $pelanggan->phone ?? old('no_hp') }}" placeholder="08xxx" required>
-                            </div>
-                            <div class="col-12">
-                                <label class="small fw-semibold text-muted mb-1">Alamat Lengkap</label>
-                                <textarea name="alamat" class="form-control form-control-sm custom-input" rows="2" placeholder="Alamat pengiriman..." required>{{ $pelanggan->address ?? old('alamat') }}</textarea>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        {{-- Tampilkan Error Session --}}
+        @if (session('error'))
+            <div class="alert alert-danger border-0 shadow-sm mb-3" style="font-size: 0.8rem;">
+                {{ session('error') }}
+            </div>
+        @endif
 
-                {{-- Card Metode Pembayaran --}}
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-body p-3">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-box bg-primary-subtle text-primary me-2" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                                <i class="fas fa-wallet fa-sm"></i>
-                            </div>
-                            <h6 class="fw-bold mb-0" style="font-size: 0.9rem;">Metode Pembayaran</h6>
-                        </div>
+        <div class="row g-3 justify-content-center">
+            <div class="col-lg-7">
+                <form action="{{ route('checkout.store') }}" method="POST" id="checkoutForm" enctype="multipart/form-data">
+                    @csrf
 
-                        <div class="payment-options">
-                            {{-- COD --}}
-                            <label class="payment-item mb-2 d-block cursor-pointer">
-                                <input type="radio" name="metode_pembayaran" value="cod" class="d-none" checked>
-                                <div class="payment-content d-flex align-items-center p-2 border rounded-3 transition-all">
-                                    <i class="fas fa-hand-holding-usd mx-2 text-secondary"></i>
-                                    <div class="flex-grow-1 small fw-bold text-dark">COD (Bayar di Tempat)</div>
-                                    <div class="check-mark d-none text-success"><i class="fas fa-check-circle"></i></div>
+                    {{-- Informasi Pengiriman --}}
+                    <div class="card border-0 shadow-sm rounded-4 mb-3">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="icon-box bg-success-subtle text-success me-2" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                    <i class="fas fa-map-marker-alt fa-sm"></i>
                                 </div>
-                            </label>
-
-                            {{-- Transfer Bank --}}
-                            <label class="payment-item d-block cursor-pointer">
-                                <input type="radio" name="metode_pembayaran" value="bank_transfer" class="d-none">
-                                <div class="payment-content d-flex align-items-center p-2 border rounded-3 transition-all">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" class="mx-2" style="height: 12px;">
-                                    <div class="flex-grow-1 small fw-bold text-dark">Transfer Bank BCA</div>
-                                    <div class="check-mark d-none text-success"><i class="fas fa-check-circle"></i></div>
+                                <h6 class="fw-bold mb-0" style="font-size: 0.9rem;">Informasi Pengiriman</h6>
+                            </div>
+                            
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="small fw-semibold text-muted mb-1">Nama Penerima</label>
+                                    <input type="text" name="nama_pelanggan" class="form-control form-control-sm custom-input" value="{{ $pelanggan->name ?? old('nama_pelanggan') }}" required>
                                 </div>
-                            </label>
-
-                            {{-- Dropdown Detail Rekening (Efek Smooth) --}}
-                            <div id="bankDetails" class="bank-details-wrapper">
-                                <div class="p-3 rounded-3 border bg-white shadow-sm mt-2">
-                                    <div class="row align-items-center mb-3 border-bottom pb-3">
-                                        <div class="col-8">
-                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Nomor Rekening BCA</span>
-                                            <span class="fw-bold text-primary fs-5" id="norek">0292943154</span>
-                                            <span class="d-block fw-semibold text-dark">a/n Kristofer</span>
-                                        </div>
-                                        <div class="col-4 text-end">
-                                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="copyToClipboard('0292943154')" style="font-size: 0.7rem;">
-                                                <i class="far fa-copy me-1"></i> Salin
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <label class="small fw-bold text-dark mb-2">Upload Bukti Pembayaran <span class="text-danger">*</span></label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="file" name="bukti_pembayaran" id="buktiPembayaran" class="form-control custom-input" accept="image/*">
-                                            </div>
-                                            <div class="mt-1 d-flex align-items-center">
-                                                <i class="fas fa-info-circle text-muted me-1" style="font-size: 0.65rem;"></i>
-                                                <small class="text-muted" style="font-size: 0.65rem;">Format: JPG, PNG. Maksimal file 2MB</small>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="col-md-6">
+                                    <label class="small fw-semibold text-muted mb-1">No. WhatsApp</label>
+                                    <input type="tel" name="no_hp" class="form-control form-control-sm custom-input" value="{{ $pelanggan->phone ?? old('no_hp') }}" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="small fw-semibold text-muted mb-1">Alamat Lengkap</label>
+                                    <textarea name="alamat" class="form-control form-control-sm custom-input" rows="2" required>{{ $pelanggan->address ?? old('alamat') }}</textarea>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <button type="submit" class="btn btn-success w-100 mt-3 fw-bold py-2 shadow-sm rounded-3" id="submitBtn">
-                    <i class="fas fa-check-circle me-1"></i> KONFIRMASI PESANAN
-                </button>
-            </form>
-        </div>
+                    {{-- Metode Pembayaran --}}
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="icon-box bg-primary-subtle text-primary me-2" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                    <i class="fas fa-wallet fa-sm"></i>
+                                </div>
+                                <h6 class="fw-bold mb-0" style="font-size: 0.9rem;">Metode Pembayaran</h6>
+                            </div>
 
-        {{-- KANAN: Ringkasan Pesanan --}}
-        <div class="col-lg-5">
-            {{-- Bagian Ringkasan Tetap Sama Seperti Kode Anda --}}
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-body p-3">
-                    <h6 class="fw-bold mb-3 border-bottom pb-2" style="font-size: 0.9rem;"><i class="fas fa-receipt me-1"></i>Ringkasan</h6>
-                    <div class="order-items mb-3" style="max-height: 200px; overflow-y: auto;">
+                            <div class="payment-options">
+                                <label class="payment-item mb-2 d-block cursor-pointer">
+                                    <input type="radio" name="metode_pembayaran" value="cod" class="d-none" checked>
+                                    <div class="payment-content d-flex align-items-center p-2 border rounded-3">
+                                        <i class="fas fa-hand-holding-usd mx-2 text-secondary"></i>
+                                        <div class="flex-grow-1 small fw-bold text-dark">COD (Bayar di Tempat)</div>
+                                    </div>
+                                </label>
+
+                                <label class="payment-item d-block cursor-pointer">
+                                    <input type="radio" name="metode_pembayaran" value="bank_transfer" class="d-none">
+                                    <div class="payment-content d-flex align-items-center p-2 border rounded-3">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" class="mx-2" style="height: 12px;">
+                                        <div class="flex-grow-1 small fw-bold text-dark">Transfer Bank BCA</div>
+                                    </div>
+                                </label>
+
+                                <div id="bankDetails" class="bank-details-wrapper">
+                                    <div class="mt-2 p-2 bg-light border rounded-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+                                            <div style="font-size: 0.75rem;">
+                                                <span class="text-muted">BCA:</span> 
+                                                <strong id="noRekening">0292943154</strong>
+                                                <div class="text-muted">a/n Kristofer</div>
+                                            </div>
+                                            <button type="button" class="btn btn-xs btn-outline-primary" style="font-size: 0.65rem; padding: 1px 6px;" onclick="copyToClipboard()">Salin</button>
+                                        </div>
+                                        <div class="p-2 bg-white rounded border-dashed text-center">
+                                            <label class="fw-bold d-block mb-1" style="font-size: 0.7rem;">Bukti Transfer <span class="text-danger">*</span></label>
+                                            <input type="file" name="bukti_pembayaran" id="buktiPembayaran" class="form-control form-control-sm" accept="image/*" style="font-size: 0.7rem;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 mt-3 fw-bold py-2 rounded-3" id="submitBtn">
+                        <i class="fas fa-check-circle me-1"></i> KONFIRMASI PESANAN
+                    </button>
+                </form>
+            </div>
+
+            <div class="col-lg-5">
+                {{-- Ringkasan Pesanan --}}
+                <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 20px;">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold mb-2 pb-2 border-bottom" style="font-size: 0.85rem;">Ringkasan</h6>
                         @foreach($items as $item)
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="small">
-                                <span class="badge bg-success-subtle text-success me-1">{{ $item->jumlah }}x</span>
-                                <span class="text-dark">{{ Str::limit($item->menu->nama_menu, 20) }}</span>
-                            </div>
-                            <span class="small fw-bold">Rp {{ number_format($item->total_harga,0,',','.') }}</span>
+                        <div class="d-flex justify-content-between mb-1 small" style="font-size: 0.75rem;">
+                            <span>{{ $item->jumlah }}x {{ $item->menu->nama_menu }}</span>
+                            <span class="fw-bold text-dark">Rp {{ number_format($item->total_harga,0,',','.') }}</span>
                         </div>
                         @endforeach
-                    </div>
-
-                    <div class="bg-light p-2 rounded-3">
-                        <div class="d-flex justify-content-between mb-1 small text-muted">
-                            <span>Subtotal</span>
-                            <span>Rp {{ number_format($grandTotal,0,',','.') }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between fw-bold text-success border-top mt-1 pt-1">
-                            <span>Total Bayar</span>
-                            <span>Rp {{ number_format($totalWithFee ?? $grandTotal * 1.1,0,',','.') }}</span>
+                        <div class="bg-light p-2 rounded mt-2">
+                            <div class="d-flex justify-content-between fw-bold text-success">
+                                <span style="font-size: 0.85rem;">Total Bayar</span>
+                                <span style="font-size: 0.95rem;">Rp {{ number_format($grandTotal,0,',','.') }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -141,70 +133,62 @@
 </div>
 
 <style>
-    .custom-input { border: 1.5px solid #eee !important; border-radius: 8px !important; background-color: #fcfcfc !important; }
-    .custom-input:focus { border-color: #198754 !important; background-color: #fff !important; box-shadow: none !important; }
-    
+    .custom-input { border: 1.5px solid #eee !important; border-radius: 8px !important; font-size: 0.8rem !important; }
     .payment-item input:checked + .payment-content { border-color: #198754 !important; background-color: #f0fff4 !important; }
-    .payment-item input:checked + .payment-content .check-mark { display: block !important; }
-    
-    /* Efek Smooth Sliding untuk Bank Details */
-    .bank-details-wrapper {
-        max-height: 0;
-        overflow: hidden;
-        opacity: 0;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        transform: translateY(-10px);
-    }
-
-    .bank-details-wrapper.active {
-        max-height: 500px; /* Nilai cukup besar untuk menampung isi */
-        opacity: 1;
-        transform: translateY(0);
-        margin-bottom: 15px;
-    }
-
-    .cursor-pointer { cursor: pointer; }
-    .transition-all { transition: all 0.2s ease; }
+    .bank-details-wrapper { max-height: 0; overflow: hidden; opacity: 0; transition: all 0.3s ease; }
+    .bank-details-wrapper.active { max-height: 300px; opacity: 1; margin-top: 10px; }
+    .border-dashed { border: 1.5px dashed #ddd; }
+    #submitBtn:disabled { background-color: #6c757d !important; border-color: #6c757d !important; opacity: 0.6; cursor: not-allowed; }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('checkoutForm');
     const radios = document.querySelectorAll('input[name="metode_pembayaran"]');
     const bankDetails = document.getElementById('bankDetails');
-    const checkoutForm = document.getElementById('checkoutForm');
     const buktiInput = document.getElementById('buktiPembayaran');
+    const submitBtn = document.getElementById('submitBtn');
 
-    // Fungsi Toggle Smooth
-    function handlePaymentChange() {
+    function validateSubmit() {
         const selected = document.querySelector('input[name="metode_pembayaran"]:checked').value;
         if (selected === 'bank_transfer') {
-            bankDetails.classList.add('active');
+            submitBtn.disabled = (buktiInput.files.length === 0);
         } else {
-            bankDetails.classList.remove('active');
-            buktiInput.value = ""; 
+            submitBtn.disabled = false;
         }
     }
 
-    radios.forEach(radio => {
-        radio.addEventListener('change', handlePaymentChange);
+    radios.forEach(r => {
+        r.addEventListener('change', function() {
+            bankDetails.classList.toggle('active', this.value === 'bank_transfer');
+            validateSubmit();
+        });
     });
 
-    // Inisialisasi awal (jika bank transfer tercentang default)
-    handlePaymentChange();
+    buktiInput.addEventListener('change', validateSubmit);
+    validateSubmit(); // Cek saat load awal
 
-    // Validasi Submit
-    checkoutForm.addEventListener('submit', function(e) {
-        const selectedMethod = document.querySelector('input[name="metode_pembayaran"]:checked').value;
-        if (selectedMethod === 'bank_transfer' && buktiInput.files.length === 0) {
-            e.preventDefault(); 
-            alert('Silakan unggah bukti transfer terlebih dahulu.');
-        }
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: 'Memproses Pesanan',
+            text: 'Mohon tunggu sebentar...',
+            icon: 'info',
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        // Pastikan form dikirim secara fisik
+        setTimeout(() => { form.submit(); }, 500);
     });
 });
 
-function copyToClipboard(text) {
+function copyToClipboard() {
+    const text = document.getElementById('noRekening').innerText;
     navigator.clipboard.writeText(text).then(() => {
-        alert('Nomor rekening ' + text + ' berhasil disalin!');
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Nomor BCA disalin', showConfirmButton: false, timer: 1500 });
     });
 }
 </script>

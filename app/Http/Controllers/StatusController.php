@@ -11,7 +11,7 @@ class StatusController extends Controller
     // Tampilkan semua status pesanan pelanggan
     public function index()
     {
-        $userId = Auth::id();
+        $userId = Auth::guard('pelanggan')->id();
 
         $statuses = Status::where('user_id', $userId)
                         ->orderBy('created_at', 'desc')

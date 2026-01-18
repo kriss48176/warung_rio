@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
+use App\Models\Pelanggan;
 
 class Status extends Model
 {
@@ -25,8 +25,8 @@ class Status extends Model
         'items' => 'array' // Supaya kolom JSON items otomatis jadi array
     ];
 
-    public function user()
+    public function pelanggan()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Pelanggan::class, 'user_id');
     }
 }

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('no_hp');
             $table->json('items'); // JSON array of menu items
             $table->decimal('total_harga', 10, 2);
-            $table->enum('status', ['baru', 'diproses', 'selesai'])->default('baru');
+            $table->enum('status', ['menunggu', 'diproses', 'diantar', 'selesai', 'dibatalkan'])->default('menunggu');
             $table->text('catatan')->nullable();
             $table->string('metode_pembayaran');
 

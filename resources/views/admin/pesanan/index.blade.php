@@ -10,14 +10,14 @@
             </div>
             <div class="d-none d-sm-inline-block">
                 <span class="badge bg-white shadow-sm border py-2 px-3 text-dark fw-normal">
-                    <i class="fas fa-utensils text-primary me-2"></i> Antrean Aktif: {{ $pesanan->where('status_pesanan', 'diproses')->count() }}
+                    <i class="fas fa-utensils text-primary me-2"></i> Antrean Aktif: {{ $totalAntrean ?? $pesanan->where('status_pesanan', 'diproses')->count() }}
                 </span>
             </div>
         </div>
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success border-0 shadow-sm rounded-3 d-flex align-items-center" role="alert">
+        <div class="alert alert-success border-0 shadow-sm rounded-3 d-flex align-items-center mb-4" role="alert">
             <i class="fas fa-check-circle me-2"></i>
             <div>{{ session('success') }}</div>
         </div>
@@ -37,7 +37,7 @@
                             <th class="ps-4 py-3">ID</th>
                             <th>Pelanggan</th>
                             <th>Info Kontak</th>
-                            <th>Catatan Pelanggan</th> {{-- Kolom Catatan Tambahan --}}
+                            <th>Catatan Pelanggan</th>
                             <th>Total Harga</th>
                             <th>Status Pesanan</th>
                             <th class="text-center">Aksi</th>
@@ -56,7 +56,7 @@
                                 </div>
                             </td>
                             <td>
-                                <a href="https://wa.me/{{ $p->no_hp }}" target="_blank" class="text-decoration-none text-dark">
+                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $p->no_hp) }}" target="_blank" class="text-decoration-none text-dark">
                                     <i class="fab fa-whatsapp text-success me-1"></i> {{ $p->no_hp }}
                                 </a>
                             </td>
@@ -74,11 +74,11 @@
                             </td>
                             <td>
                                 @php
-                                    // Logika warna badge status
                                     $statusColor = 'info';
-                                    if($p->status_pesanan == 'selesai') $statusColor = 'success';
-                                    if($p->status_pesanan == 'dibatalkan') $statusColor = 'danger';
-                                    if($p->status_pesanan == 'diproses') $statusColor = 'warning';
+                                    $statusVal = strtolower($p->status_pesanan);
+                                    if($statusVal == 'selesai') $statusColor = 'success';
+                                    if($statusVal == 'dibatalkan') $statusColor = 'danger';
+                                    if($statusVal == 'diproses') $statusColor = 'warning';
                                 @endphp
                                 <span class="badge bg-{{ $statusColor }} rounded-pill px-3 fw-medium">
                                     {{ ucfirst($p->status_pesanan) }}
@@ -94,7 +94,7 @@
                         <tr>
                             <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="fas fa-inbox fa-3x mb-3 opacity-20"></i>
-                                <p>Belum ada pesanan yang masuk hari ini.</p>
+                                <p>Belum ada pesanan yang masuk.</p>
                             </td>
                         </tr>
                         @endforelse
@@ -102,36 +102,54 @@
                 </table>
             </div>
         </div>
-        {{-- Pagination --}}
-        @if($pesanan->hasPages())
-        <div class="card-footer bg-white border-0 py-3">
-            <nav aria-label="Page navigation" class="d-flex justify-content-center">
-                <ul class="pagination pagination-sm">
-                    {{-- Previous Page Link --}}
-                    @if ($pesanan->onFirstPage())
-                        <li class="page-item disabled">
-                            <span class="page-link">Previous</span>
-                        </li>
-                    @else
-                        <li class="page-item">
-                            <a class="page-link" href="{{ $pesanan->previousPageUrl() }}">Previous</a>
-                        </li>
-                    @endif
 
-                    {{-- Next Page Link --}}
-                    @if ($pesanan->hasMorePages())
-                        <li class="page-item">
-                            <a class="page-link" href="{{ $pesanan->nextPageUrl() }}">Next</a>
-                        </li>
-                    @else
-                        <li class="page-item disabled">
-                            <span class="page-link">Next</span>
-                        </li>
-                    @endif
-                </ul>
-            </nav>
+        {{-- FOOTER PAGINATION DENGAN NOMOR HALAMAN --}}
+        <div class="card-footer bg-white border-top py-3">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center px-2">
+                <div class="small text-muted mb-3 mb-md-0">
+                    Total: <strong>{{ $pesanan->total() }}</strong> pesanan
+                </div>
+                
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm mb-0">
+                        {{-- Previous Page Link --}}
+                        @if ($pesanan->onFirstPage())
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                        @else
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $pesanan->previousPageUrl() }}">Previous</a>
+                            </li>
+                        @endif
+
+                        {{-- Page Numbers (Looping Nomor) --}}
+                        @foreach ($pesanan->getUrlRange(1, $pesanan->lastPage()) as $page => $url)
+                            @if ($page == $pesanan->currentPage())
+                                <li class="page-item active shadow-sm">
+                                    <span class="page-link">{{ $page }}</span>
+                                </li>
+                            @else
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                </li>
+                            @endif
+                        @endforeach
+
+                        {{-- Next Page Link --}}
+                        @if ($pesanan->hasMorePages())
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $pesanan->nextPageUrl() }}">Next</a>
+                            </li>
+                        @else
+                            <li class="page-item disabled">
+                                <span class="page-link">Next</span>
+                            </li>
+                        @endif
+                    </ul>
+                </nav>
+            </div>
         </div>
-        @endif
     </div>
 </div>
 
@@ -141,8 +159,20 @@
     .table th { font-size: 0.75rem; letter-spacing: 0.5px; }
     .table-hover tbody tr:hover { background-color: #f1f5f9; transition: 0.2s; }
     
-    /* Perbaikan Pagination */
-    .custom-pagination svg { width: 20px; height: 20px; }
-    .custom-pagination nav > div:first-child { display: none !important; }
+    /* Pagination Styling agar rapi */
+    .pagination .page-link {
+        color: #4e73df;
+        border: 1px solid #dee2e6;
+        padding: 0.4rem 0.8rem;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #4e73df;
+        border-color: #4e73df;
+        color: white;
+    }
+    .pagination .page-item.disabled .page-link {
+        color: #858796;
+        background-color: #f8f9fc;
+    }
 </style>
 @endsection
