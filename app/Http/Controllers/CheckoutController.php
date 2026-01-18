@@ -87,7 +87,7 @@ class CheckoutController extends Controller
                     'no_hp' => $request->no_hp,
                     'items' => $itemsArray,
                     'total_harga' => $grandTotal,
-                    'status' => 'menunggu',
+                    'status' => 'baru',
                     'catatan' => $request->catatan,
                     'metode_pembayaran' => $request->metode_pembayaran
                 ]);

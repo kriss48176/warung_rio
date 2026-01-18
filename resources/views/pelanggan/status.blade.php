@@ -38,11 +38,10 @@
                             
                             @php
                                 $statusMap = [
-                                    'menunggu' => ['bg' => '#fff4e5', 'text' => '#b45309'],
+                                    'baru' => ['bg' => '#fff4e5', 'text' => '#b45309'],
                                     'diproses' => ['bg' => '#e0f2fe', 'text' => '#0369a1'],
                                     'diantar' => ['bg' => '#fef3c7', 'text' => '#92400e'],
                                     'selesai' => ['bg' => '#f0fdf4', 'text' => '#15803d'],
-                                    'dibatalkan' => ['bg' => '#fef2f2', 'text' => '#991b1b'],
                                 ];
                                 $st = $statusMap[strtolower($status->status)] ?? ['bg' => '#fff4e5', 'text' => '#b45309'];
                             @endphp

@@ -11,6 +11,7 @@ class Status extends Model
 
     protected $fillable = [
         'user_id',
+        'pesanan_id',
         'nama_pelanggan',
         'alamat',
         'no_hp',
